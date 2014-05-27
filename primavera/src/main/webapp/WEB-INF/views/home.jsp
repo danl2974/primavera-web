@@ -6,13 +6,20 @@
 </head>
 <body>
 <h1>
-	Hello world!  
+	Home 
 </h1>
 
 <P>  The time on the server is ${serverTime}. </P>
 
 <p>
 ${timeproduct}</p>
+
+<p>
+Locale: ${locale}</p>
+
+<p>
+WS response: <br/><br/> 
+${wsresponse}</p>
 
 </body>
 </html>
