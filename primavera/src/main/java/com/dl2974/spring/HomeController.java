@@ -1,5 +1,6 @@
 package com.dl2974.spring;
 
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -14,6 +15,9 @@ import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +63,11 @@ public class HomeController {
         String url = "http://ec2-54-242-85-239.compute-1.amazonaws.com:8080/soapservice/ws/soap";
         SOAPMessage soapResponse = soapConnection.call(createSOAPRequest("tester", String.format("%d", timeproduct) ), url);
         
-		
-        model.addAttribute("wsresponse", soapResponse.toString() );
+        StringWriter sw = new StringWriter();
+        TransformerFactory.newInstance().newTransformer().transform( new DOMSource(soapResponse.getSOAPBody()), new StreamResult(sw) );
+        
+        model.addAttribute("wsresponse", sw.toString() );
+        
 		}catch(Exception e){logger.info(e.getMessage());}
         
 		return "home";
@@ -82,8 +89,8 @@ public class HomeController {
 
         // SOAP Body
         SOAPBody soapBody = envelope.getBody();
-        SOAPElement soapBodyElem = soapBody.addChildElement(action, "mns1");
-        SOAPElement soapBodyElem1 = soapBodyElem.addChildElement("arg0", "mns1");
+        SOAPElement soapBodyElem = soapBody.addChildElement(action);
+        SOAPElement soapBodyElem1 = soapBodyElem.addChildElement("arg0");
         soapBodyElem1.addTextNode(param);
 
         MimeHeaders headers = soapMessage.getMimeHeaders();
