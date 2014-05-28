@@ -25,6 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.w3c.dom.NodeList;
 
 
 /**
@@ -61,12 +62,26 @@ public class HomeController {
         SOAPConnection soapConnection = soapConnectionFactory.createConnection();
 
         String url = "http://ec2-54-242-85-239.compute-1.amazonaws.com:8080/soapservice/ws/soap";
-        SOAPMessage soapResponse = soapConnection.call(createSOAPRequest("tester", String.format("%d", timeproduct) ), url);
+        SOAPMessage soapMessage = createSOAPRequest("power", String.format("%d", timeproduct) );
+        SOAPMessage soapResponse = soapConnection.call(soapMessage, url);
         
+        SOAPBody bodyResp = soapResponse.getSOAPBody(); 
+        NodeList nlist = bodyResp.getElementsByTagName("return");
+        StringBuilder respSb = new StringBuilder();
+        for (int i = 0; i < nlist.getLength(); i++){
+        	respSb.append(nlist.item(i).getTextContent());
+        }
+        
+        //StringWriter swreq = new StringWriter();
+        //StringWriter swreq2 = new StringWriter();
         StringWriter sw = new StringWriter();
+        
+        //TransformerFactory.newInstance().newTransformer().transform( new DOMSource(soapMessage.getSOAPBody()), new StreamResult(swreq) );
+        //TransformerFactory.newInstance().newTransformer().transform( new DOMSource(soapMessage.getSOAPHeader()), new StreamResult(swreq2) );
         TransformerFactory.newInstance().newTransformer().transform( new DOMSource(soapResponse.getSOAPBody()), new StreamResult(sw) );
         
-        model.addAttribute("wsresponse", sw.toString() );
+        //model.addAttribute("wsrequest", swreq.toString() + "  " +  swreq2.toString() );
+        model.addAttribute("wsresponse", respSb.toString() + " " + sw.toString() );
         
 		}catch(Exception e){logger.info(e.getMessage());}
         
@@ -76,20 +91,20 @@ public class HomeController {
 	
 	
     private SOAPMessage createSOAPRequest(String action, String param) throws Exception {
+    	
         MessageFactory messageFactory = MessageFactory.newInstance();
         SOAPMessage soapMessage = messageFactory.createMessage();
         SOAPPart soapPart = soapMessage.getSOAPPart();
 
-        String serverURI = "http://ec2-54-242-85-239.compute-1.amazonaws.com:8080/soapservice/ws/soap";
+        String serverURI = "http://soapws.dl2974.com/";
 
         // SOAP Envelope
         SOAPEnvelope envelope = soapPart.getEnvelope();
-        envelope.addNamespaceDeclaration("mns1", serverURI);
-
+        envelope.addNamespaceDeclaration("ns1", serverURI);
 
         // SOAP Body
         SOAPBody soapBody = envelope.getBody();
-        SOAPElement soapBodyElem = soapBody.addChildElement(action);
+        SOAPElement soapBodyElem = soapBody.addChildElement(action, "ns1");
         SOAPElement soapBodyElem1 = soapBodyElem.addChildElement("arg0");
         soapBodyElem1.addTextNode(param);
 
