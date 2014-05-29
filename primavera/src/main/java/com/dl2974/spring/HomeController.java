@@ -105,7 +105,7 @@ public class HomeController {
         // SOAP Body
         SOAPBody soapBody = envelope.getBody();
         SOAPElement soapBodyElem = soapBody.addChildElement(action, "ns1");
-        SOAPElement soapBodyElem1 = soapBodyElem.addChildElement("arg0");
+        SOAPElement soapBodyElem1 = soapBodyElem.addChildElement("number");
         soapBodyElem1.addTextNode(param);
 
         MimeHeaders headers = soapMessage.getMimeHeaders();
