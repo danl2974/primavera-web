@@ -4,8 +4,12 @@ import java.io.StringWriter;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 
+import javax.servlet.http.HttpSession;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPBody;
@@ -25,6 +29,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.ModelAndView;
 import org.w3c.dom.NodeList;
 
 
@@ -115,6 +122,49 @@ public class HomeController {
 
         return soapMessage;
     }
+    
+    
+    @RequestMapping(value = "/random", method = RequestMethod.GET)
+	public String random(Model model) {
+    	
+    	Random r = new Random();
+    	Calendar cal = Calendar.getInstance();
+    	int max = cal.get(Calendar.MILLISECOND);
+    	int genR = r.nextInt(max);
+    	
+    	model.addAttribute("max", max);
+    	model.addAttribute("randomGen", genR);
+    	
+    	return "random";
+        
+    }
   
 	
+	@RequestMapping(value="/session", method=RequestMethod.GET)
+	public ModelAndView displaySession(HttpSession session, @RequestParam  Map<String, String> qsParams) {
+		ModelAndView modelAndView = new ModelAndView("sess");
+		String sid = session.getId();
+		for (Map.Entry<String,String> kvp : qsParams.entrySet()){
+		 session.setAttribute(kvp.getKey(), kvp.getValue());
+		}
+		modelAndView.addObject("sid", sid);
+		modelAndView.addObject("content", sessionContent(session));
+		return modelAndView;
+	}
+	
+	
+	private String sessionContent(HttpSession session) {
+		
+	   Enumeration<String> e = session.getAttributeNames();
+	   StringBuffer sbuff = new StringBuffer();
+       while (e.hasMoreElements()) {
+           String name = (String) e.nextElement();
+           String value = session.getAttribute(name).toString();
+           sbuff.append(String.format("%s : %s <br/>", name, value));
+         }
+    
+        return sbuff.toString();
+	   }
+	
+
 }
